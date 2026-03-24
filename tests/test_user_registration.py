@@ -1,58 +1,69 @@
-import pytest
-from selenium.webdriver.support.ui import WebDriverWait
+import requests
 from selenium.webdriver.support import expected_conditions as EC
-from src.helpers import generate_name, generate_login, generate_valid_password, generate_invalid_password
+
+from src.data import ApiEndpoints, WebEndpoints, build_url
+from src.helpers import (
+    generate_invalid_password,
+    generate_name,
+    generate_user_payload,
+)
 from src.locators import WebsiteLocators
-import src.data as data
+
+TIMEOUT = 15
+
 
 class TestUserRegistration:
+    def test_successful_registration(self, driver_chrome, wait):
+        user_data = generate_user_payload()
+        access_token = None
 
-    def test_successful_registration(self, driver_chrome):
-        driver = driver_chrome
-        driver.get(data.register_page_url)
-        wait = WebDriverWait(driver, 60)
+        try:
+            driver_chrome.get(build_url(WebEndpoints.REGISTER_PAGE))
 
-        # Вводим сгенерированное имя для регистрации в поле
-        name_input = wait.until(EC.presence_of_element_located(WebsiteLocators.NAME_INPUT_FORM))
-        name_input.send_keys(generate_name())
+            wait.until(EC.visibility_of_element_located(WebsiteLocators.NAME_INPUT_FORM)).send_keys(
+                user_data['name']
+            )
+            wait.until(EC.visibility_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM)).send_keys(
+                user_data['email']
+            )
+            wait.until(EC.visibility_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM)).send_keys(
+                user_data['password']
+            )
+            wait.until(EC.element_to_be_clickable(WebsiteLocators.REGISTRATION_BUTTON_FORM)).click()
 
-        # Вводим сгенерированный email для регистрации в поле
-        email_input = wait.until(EC.presence_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM))
-        email_input.send_keys(generate_login())
+            assert wait.until(
+                EC.visibility_of_element_located(WebsiteLocators.LOGIN_BUTTON_FORM)
+            ).is_displayed()
 
-        # Вводим сгенерированный корректный пароль для регистрации в поле
-        password_input = wait.until(EC.presence_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM))
-        password_input.send_keys(generate_valid_password())
+            login_response = requests.post(
+                build_url(ApiEndpoints.LOGIN_USER),
+                json={'email': user_data['email'], 'password': user_data['password']},
+                timeout=TIMEOUT,
+            )
+            if login_response.ok:
+                access_token = login_response.json().get('accessToken')
+        finally:
+            if access_token:
+                requests.delete(
+                    build_url(ApiEndpoints.USER),
+                    headers={'Authorization': access_token},
+                    timeout=TIMEOUT,
+                )
 
-        # Нажимаем кнопку "Зарегистрироваться"
-        registration_button = wait.until(EC.element_to_be_clickable(WebsiteLocators.REGISTRATION_BUTTON_FORM))
-        registration_button.click()
+    def test_registration_with_invalid_password(self, driver_chrome, wait):
+        driver_chrome.get(build_url(WebEndpoints.REGISTER_PAGE))
 
-        # Ожидаем, что появится кнопка "Войти" на странице входа
-        login_button = wait.until(EC.presence_of_element_located(WebsiteLocators.LOGIN_BUTTON_FORM))
-        assert login_button.is_displayed()
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.NAME_INPUT_FORM)).send_keys(
+            generate_name()
+        )
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM)).send_keys(
+            generate_user_payload()['email']
+        )
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM)).send_keys(
+            generate_invalid_password()
+        )
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.REGISTRATION_BUTTON_FORM)).click()
 
-    def test_registration_with_invalid_password(self, driver_chrome):
-        driver = driver_chrome
-        driver.get(data.register_page_url)
-        wait = WebDriverWait(driver, 60)
-
-        # Вводим сгенерированное имя для регистрации в поле
-        name_input = wait.until(EC.presence_of_element_located(WebsiteLocators.NAME_INPUT_FORM))
-        name_input.send_keys(generate_name())
-
-        # Вводим сгенерированный email для регистрации в поле
-        email_input = wait.until(EC.presence_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM))
-        email_input.send_keys(generate_login())
-
-        # Вводим сгенерированный некорректный пароль (меньше 6 символов) для регистрации в поле
-        password_input = wait.until(EC.presence_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM))
-        password_input.send_keys(generate_invalid_password())
-
-        # Снимаем фокус с поля "Пароль", нажимая на кнопку "Зарегистрироваться"
-        registration_button = wait.until(EC.element_to_be_clickable(WebsiteLocators.REGISTRATION_BUTTON_FORM))
-        registration_button.click()
-
-        # Ожидаем появления сообщения об ошибке пароля
-        password_error_message = wait.until(EC.presence_of_element_located(WebsiteLocators.PASSWORD_ERROR_MESSAGE))
-        assert password_error_message.is_displayed()
+        assert wait.until(
+            EC.visibility_of_element_located(WebsiteLocators.PASSWORD_ERROR_MESSAGE)
+        ).is_displayed()

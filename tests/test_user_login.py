@@ -1,118 +1,74 @@
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+from src.data import WebEndpoints, build_url
 from src.locators import WebsiteLocators
-import src.data as data
+
 
 class TestUserLogin:
+    def test_login_via_account_button(self, driver_chrome, wait, test_user):
+        driver_chrome.get(build_url(WebEndpoints.MAIN_PAGE))
 
-    def test_login_via_account_button(self, driver_chrome):
-        driver = driver_chrome
-        driver.get(data.main_page_url)
-        wait = WebDriverWait(driver, 60)
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_INTO_ACCOUNT_BUTTON)).click()
+        wait.until(EC.url_to_be(build_url(WebEndpoints.LOGIN_PAGE)))
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM)).send_keys(
+            test_user['email']
+        )
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM)).send_keys(
+            test_user['password']
+        )
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_BUTTON_FORM)).click()
 
-        # Ожидаем и кликаем кнопку "Войти в аккаунт"
-        account_button = wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_INTO_ACCOUNT_BUTTON))
-        account_button.click()
+        assert wait.until(
+            EC.visibility_of_element_located(WebsiteLocators.MAKE_ORDER_BUTTON)
+        ).is_displayed()
 
-        # Ожидаем переход на страницу входа
-        wait.until(EC.url_to_be(data.login_page_url))
+    def test_login_via_account_button_in_header(self, driver_chrome, wait, test_user):
+        driver_chrome.get(build_url(WebEndpoints.MAIN_PAGE))
 
-        # Вводим email для входа в поле
-        email_input = wait.until(EC.presence_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM))
-        email_input.send_keys(data.test_user_login)
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.ACCOUNT_BUTTON)).click()
+        wait.until(EC.url_to_be(build_url(WebEndpoints.LOGIN_PAGE)))
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM)).send_keys(
+            test_user['email']
+        )
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM)).send_keys(
+            test_user['password']
+        )
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_BUTTON_FORM)).click()
 
-        # Вводим пароль для входа в поле
-        password_input = wait.until(EC.presence_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM))
-        password_input.send_keys(data.test_user_password)
+        assert wait.until(
+            EC.visibility_of_element_located(WebsiteLocators.MAKE_ORDER_BUTTON)
+        ).is_displayed()
 
-        # Нажимаем кнопку "Войти"
-        login_button = wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_BUTTON_FORM))
-        login_button.click()
+    def test_login_via_registration_form(self, driver_chrome, wait, test_user):
+        driver_chrome.get(build_url(WebEndpoints.REGISTER_PAGE))
 
-        # Ожидаем, что кнопка "Оформить заказ" появится на главной странице
-        make_order_button = wait.until(EC.presence_of_element_located(WebsiteLocators.MAKE_ORDER_BUTTON))
-        assert make_order_button.is_displayed()
-    
-    def test_login_via_account_button_in_header(self, driver_chrome):
-        driver = driver_chrome
-        driver.get(data.main_page_url)
-        wait = WebDriverWait(driver, 60)
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_TEXT_LINK)).click()
+        wait.until(EC.url_to_be(build_url(WebEndpoints.LOGIN_PAGE)))
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM)).send_keys(
+            test_user['email']
+        )
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM)).send_keys(
+            test_user['password']
+        )
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_BUTTON_FORM)).click()
 
-        # Ожидаем и кликаем кнопку "Личный Кабинет"
-        account_button = wait.until(EC.element_to_be_clickable(WebsiteLocators.ACCOUNT_BUTTON))
-        account_button.click()
+        assert wait.until(
+            EC.visibility_of_element_located(WebsiteLocators.MAKE_ORDER_BUTTON)
+        ).is_displayed()
 
-        # Ожидаем переход на страницу входа
-        wait.until(EC.url_to_be(data.login_page_url))
+    def test_login_via_forgot_password_form(self, driver_chrome, wait, test_user):
+        driver_chrome.get(build_url(WebEndpoints.FORGOT_PASSWORD_PAGE))
 
-        # Вводим email для входа в поле
-        email_input = wait.until(EC.presence_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM))
-        email_input.send_keys(data.test_user_login)
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_TEXT_LINK)).click()
+        wait.until(EC.url_to_be(build_url(WebEndpoints.LOGIN_PAGE)))
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM)).send_keys(
+            test_user['email']
+        )
+        wait.until(EC.visibility_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM)).send_keys(
+            test_user['password']
+        )
+        wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_BUTTON_FORM)).click()
 
-        # Вводим пароль для входа в поле
-        password_input = wait.until(EC.presence_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM))
-        password_input.send_keys(data.test_user_password)
-
-        # Нажимаем кнопку "Войти"
-        login_button = wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_BUTTON_FORM))
-        login_button.click()
-
-        # Ожидаем, что кнопка "Оформить заказ" появится на главной странице
-        make_order_button = wait.until(EC.presence_of_element_located(WebsiteLocators.MAKE_ORDER_BUTTON))
-        assert make_order_button.is_displayed()
-    
-    def test_login_via_registration_form(self, driver_chrome):
-        driver = driver_chrome
-        driver.get(data.register_page_url)
-        wait = WebDriverWait(driver, 60)
-
-        # Нажимаем кнопку-ссылку "Войти"
-        login_text_link = wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_TEXT_LINK))
-        login_text_link.click()
-
-        # Ожидаем переход на страницу входа
-        wait.until(EC.url_to_be(data.login_page_url))
-
-        # Вводим email для входа в поле
-        email_input = wait.until(EC.presence_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM))
-        email_input.send_keys(data.test_user_login)
-
-        # Вводим пароль для входа в поле
-        password_input = wait.until(EC.presence_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM))
-        password_input.send_keys(data.test_user_password)
-
-        # Нажимаем кнопку "Войти"
-        login_button = wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_BUTTON_FORM))
-        login_button.click()
-
-        # Ожидаем, что кнопка "Оформить заказ" появится на главной странице
-        make_order_button = wait.until(EC.presence_of_element_located(WebsiteLocators.MAKE_ORDER_BUTTON))
-        assert make_order_button.is_displayed()
-        
-    def test_login_via_forgot_password_form(self, driver_chrome):
-        driver = driver_chrome
-        driver.get(data.forgot_password_page_url)
-        wait = WebDriverWait(driver, 60)
-        
-        # Ожидаем и нажимаем кнопку-ссылку "Войти"
-        login_text_link = wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_TEXT_LINK))
-        login_text_link.click()
-
-        # Ожидаем переход на страницу входа
-        wait.until(EC.url_to_be(data.login_page_url))
-
-        # Вводим email для входа в поле
-        email_input = wait.until(EC.presence_of_element_located(WebsiteLocators.EMAIL_INPUT_FORM))
-        email_input.send_keys(data.test_user_login)
-
-        # Вводим пароль для входа в поле
-        password_input = wait.until(EC.presence_of_element_located(WebsiteLocators.PASSWORD_INPUT_FORM))
-        password_input.send_keys(data.test_user_password)
-
-        # Нажимаем кнопку "Войти"
-        login_button = wait.until(EC.element_to_be_clickable(WebsiteLocators.LOGIN_BUTTON_FORM))
-        login_button.click()
-
-        # Ожидаем, что кнопка "Оформить заказ" появится на главной странице
-        make_order_button = wait.until(EC.presence_of_element_located(WebsiteLocators.MAKE_ORDER_BUTTON))
-        assert make_order_button.is_displayed()
+        assert wait.until(
+            EC.visibility_of_element_located(WebsiteLocators.MAKE_ORDER_BUTTON)
+        ).is_displayed()

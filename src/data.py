@@ -1,11 +1,29 @@
-# URLs сайта Stellar Burgers, которые используются в тестах
-main_page_url = 'https://stellarburgers.nomoreparties.site/'
-register_page_url = 'https://stellarburgers.nomoreparties.site/register'
-login_page_url = 'https://stellarburgers.nomoreparties.site/login'
-forgot_password_page_url = 'https://stellarburgers.nomoreparties.site/forgot-password'
-profile_page_url = 'https://stellarburgers.nomoreparties.site/account/profile'
+class Urls:
+    BASE_URL = 'https://stellarburgers.education-services.ru'
 
-# Данные тестового пользователя
-test_user_name = 'Test Testov'
-test_user_login = 'test_testov777@inbox.ru'
-test_user_password = 'test_testov'
+
+class WebEndpoints:
+    MAIN_PAGE = '/'
+    REGISTER_PAGE = '/register'
+    LOGIN_PAGE = '/login'
+    FORGOT_PASSWORD_PAGE = '/forgot-password'
+    PROFILE_PAGE = '/account/profile'
+
+
+class ApiEndpoints:
+    REGISTER_USER = '/api/auth/register'
+    LOGIN_USER = '/api/auth/login'
+    USER = '/api/auth/user'
+
+
+class TestData:
+    VALID_PASSWORD_LENGTH = 6
+    INVALID_PASSWORD_LENGTH = 5
+
+
+class Texts:
+    INVALID_PASSWORD_ERROR = 'Некорректный пароль'
+
+
+def build_url(endpoint: str) -> str:
+    return f'{Urls.BASE_URL}{endpoint}'
